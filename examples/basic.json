@@ -1,0 +1,23 @@
+{
+  "type": "custom:motion-tracker-card",
+  "title": "Movement at home",
+  "subtitle": "Detections during the last {minutes} minutes.",
+  "minutes": 30,
+  "fresh_minutes": 5,
+  "floors": [{
+    "id": "ground",
+    "name": "Ground floor",
+    "view_box": [0, 0, 500, 300],
+    "outline": "M20 20H480V280H20Z",
+    "rooms": [
+      {"id":"living","name":"Living room","path":"M20 20H310V280H20Z","label_position":[165,135],"status_position":[165,165]},
+      {"id":"hall","name":"Hall","path":"M310 20H480V280H310Z","label_position":[395,135],"status_position":[395,165]}
+    ],
+    "furniture": [{"type":"rect","x":60,"y":50,"width":120,"height":35,"rx":8}],
+    "windows": [{"type":"path","d":"M80 20h100M20 170v50"}]
+  }],
+  "sources": [
+    {"entity":"binary_sensor.living_room_motion","room":"living","name":"Living room detector"},
+    {"entity":"binary_sensor.hall_motion","room":"hall","name":"Hall detector"}
+  ]
+}

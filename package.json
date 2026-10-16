@@ -1,0 +1,13 @@
+{
+  "name": "home-assistant-motion-tracker-card",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Configurable Home Assistant floor plans showing recent motion",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test",
+    "check": "npm test && npm run build && node --check motion-tracker-card.js"
+  },
+  "engines": {"node": ">=20"}
+}
