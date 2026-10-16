@@ -123,17 +123,15 @@ export class MotionTrackerCard extends HTMLElement {
 export class MotionTrackerCardEditor extends HTMLElement {
  constructor(){super();this.attachShadow({mode:'open'});}
  setConfig(config){this._config=config;this._render();}
- set hass(hass){this._hass=hass;if(!this.shadowRoot.querySelector('ha-form'))this._render();else this.shadowRoot.querySelector('ha-form').hass=hass;}
+ set hass(hass){this._hass=hass;if(!this.shadowRoot.querySelector('[data-basic-form]'))this._render();}
  _render(){
   if(!this._config||!this._hass)return;
-  this.shadowRoot.innerHTML=`<style>textarea{width:100%;min-height:180px;font:12px monospace;box-sizing:border-box;background:var(--card-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:8px;padding:10px}summary{cursor:pointer;padding:12px 0}.error{color:var(--error-color)}</style><ha-form></ha-form><details><summary>Full configuration (JSON)</summary><textarea aria-label="Full card configuration"></textarea><button id="apply">Apply configuration</button><p class="error" role="alert"></p></details>`;
-  const form=this.shadowRoot.querySelector('ha-form');form.hass=this._hass;
-  form.schema=[{name:'title',selector:{text:{}}},{name:'subtitle',selector:{text:{}}},{name:'minutes',selector:{number:{min:1,max:1440,mode:'box'}}},{name:'fresh_minutes',selector:{number:{min:0,max:1440,mode:'box'}}},{name:'columns',selector:{number:{min:1,max:4,mode:'box'}}},{name:'history',selector:{boolean:{}}}];
-  const effective=normalizeConfig(this._config);form.data=Object.fromEntries(form.schema.map(s=>[s.name,effective[s.name]]));
-  form.computeLabel=s=>s.name.replaceAll('_',' ');
+  const effective=normalizeConfig(this._config);
+  const fields=[['title','Title','text'],['subtitle','Subtitle','text'],['minutes','Recent window (minutes)','number',1,1440],['fresh_minutes','Fresh threshold (minutes)','number',0,1440],['columns','Floor columns','number',1,4],['history','Load recorder history','checkbox']];
+  this.shadowRoot.innerHTML=`<style>:host{display:block;color:var(--primary-text-color);font:14px system-ui}label{display:block;margin:0 0 14px}label span{display:block;margin-bottom:5px}input:not([type=checkbox]),textarea{width:100%;box-sizing:border-box;background:var(--card-background-color,#fff);color:var(--primary-text-color);border:1px solid var(--divider-color,#ccc);border-radius:8px;padding:10px;font:inherit}textarea{min-height:180px;font:12px monospace}summary{cursor:pointer;padding:12px 0}.error{color:var(--error-color)}button{padding:8px 12px;margin-top:8px}</style><div data-basic-form>${fields.map(([key,label,type,min,max])=>`<label><span>${label}</span><input data-field="${key}" type="${type}" ${type==='checkbox'?(effective[key]?'checked':''):`value="${escapeHtml(effective[key])}"`} ${type==='number'?`min="${min}" max="${max}" step="1"`:''}></label>`).join('')}</div><details><summary>Full configuration (JSON)</summary><textarea aria-label="Full card configuration"></textarea><button id="apply">Apply configuration</button></details><p class="error" role="alert"></p>`;
   const area=this.shadowRoot.querySelector('textarea');area.value=JSON.stringify(this._config,null,2);
   const apply=config=>{try{normalizeConfig(config);this._config=config;this.dispatchEvent(new CustomEvent('config-changed',{detail:{config},bubbles:true,composed:true}));this.shadowRoot.querySelector('.error').textContent='';}catch(e){this.shadowRoot.querySelector('.error').textContent=e.message;}};
-  form.addEventListener('value-changed',e=>{apply({...this._config,...e.detail.value});area.value=JSON.stringify(this._config,null,2);});
+  this.shadowRoot.querySelectorAll('[data-field]').forEach(input=>input.onchange=()=>{const value=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;apply({...this._config,[input.dataset.field]:value});area.value=JSON.stringify(this._config,null,2);});
   this.shadowRoot.querySelector('#apply').onclick=()=>{try{apply(JSON.parse(area.value));}catch(e){this.shadowRoot.querySelector('.error').textContent=e.message;}};
  }
 }
